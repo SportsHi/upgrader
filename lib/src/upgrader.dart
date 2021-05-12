@@ -106,6 +106,7 @@ class Upgrader {
   bool _initCalled = false;
   PackageInfo? _packageInfo;
 
+  String? _iosBundleID;
   String? _installedVersion;
   String? _appStoreVersion;
   String? _appStoreListingURL;
@@ -136,12 +137,13 @@ class Upgrader {
     _appStoreListingURL = url;
   }
 
-  Future<bool> initialize() async {
+  Future<bool> initialize({@required iosBundleID, String? minVersion}) async {
     if (_initCalled) {
       return true;
     }
-
     _initCalled = true;
+    _iosBundleID = iosBundleID;
+    minAppVersion ??= minVersion;
 
     messages ??= UpgraderMessages();
     if (messages!.languageCode.isEmpty) {
@@ -175,53 +177,20 @@ class Upgrader {
   }
 
   Future<bool> _updateVersionInfo() async {
-    // If there is an appcast for this platform
-    if (_isAppcastThisPlatform()) {
-      if (debugLogging) {
-        print('upgrader: appcast is available for this platform');
-      }
+    if (_packageInfo == null || || _packageInfo!.packageName.isEmpty) {
+      return false;
+    }
 
-      final appcast = this.appcast ?? Appcast(client: client);
-      await appcast.parseAppcastItemsFromUri(appcastConfig!.url!);
-      if (debugLogging) {
-        var count = appcast.items == null ? 0 : appcast.items!.length;
-        print('upgrader: appcast item count: $count');
-      }
-      final bestItem = appcast.bestItem();
-      if (bestItem != null &&
-          bestItem.versionString != null &&
-          bestItem.versionString!.isNotEmpty) {
-        if (debugLogging) {
-          print(
-              'upgrader: appcast best item version: ${bestItem.versionString}');
-        }
-        _appStoreVersion ??= bestItem.versionString;
-        _appStoreListingURL ??= bestItem.fileURL;
-        if (bestItem.isCriticalUpdate) {
-          _isCriticalUpdate = true;
-        }
-        _releaseNotes = bestItem.itemDescription;
-      }
-    } else {
-      // If this platform is not iOS, skip the iTunes lookup
-      if (Platform.isAndroid) {
-        return false;
-      }
-
-      if (_packageInfo == null || _packageInfo!.packageName.isEmpty) {
-        return false;
-      }
-
-      // The  country code of the locale, defaulting to `US`.
-      final code = countryCode ?? findCountryCode();
-      if (debugLogging) {
-        print('upgrader: countryCode: $code');
-      }
+    // The  country code of the locale, defaulting to `US`.
+    final code = countryCode ?? findCountryCode();
+    if (debugLogging) {
+      print('upgrader: countryCode: $code');
+    }
 
       final iTunes = ITunesSearchAPI();
       iTunes.client = client;
       final country = code;
-      final response = await (iTunes.lookupByBundleId(_packageInfo!.packageName,
+      final response = await (iTunes.lookupByBundleId(_iosBundleID,
           country: country));
 
       if (response != null) {
@@ -598,13 +567,7 @@ class Upgrader {
       doProcess = onUpdate!();
     }
 
-    if (doProcess) {
-      _sendUserToAppStore();
-    }
-
-    if (shouldPop) {
-      _pop(context);
-    }
+    if (doProcess) {}
   }
 
   Future<bool> clearSavedSettings() async {
