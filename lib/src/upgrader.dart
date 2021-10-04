@@ -27,8 +27,8 @@ enum UpgradeDialogStyle { cupertino, material }
 /// contains two parts: a URL to the appcast, and a list of supported OS
 /// names, such as "android", "ios".
 class AppcastConfiguration {
-  final List<String> supportedOS;
-  final String url;
+  final List<String>? supportedOS;
+  final String? url;
 
   AppcastConfiguration({
     this.supportedOS,
@@ -42,13 +42,13 @@ class Upgrader {
 
   /// The appcast configuration ([AppcastConfiguration]) used by [Appcast].
   /// When an appcast is configured for iOS, the iTunes lookup is not used.
-  AppcastConfiguration appcastConfig;
+  AppcastConfiguration? appcastConfig;
 
   /// Provide an Appcast that can be replaced for mock testing.
-  Appcast appcast;
+  Appcast? appcast;
 
   /// Provide an HTTP Client that can be replaced for mock testing.
-  http.Client client = http.Client();
+  http.Client? client = http.Client();
 
   /// Duration until alerting user again
   Duration durationUntilAlertAgain = Duration(days: 3);
@@ -63,22 +63,22 @@ class Upgrader {
   bool debugLogging = false;
 
   /// The localized messages used for display in upgrader.
-  UpgraderMessages messages;
+  UpgraderMessages? messages;
 
   final notInitializedExceptionMessage =
       'initialize() not called. Must be called first.';
 
   /// Called when the ignore button is tapped or otherwise activated.
   /// Return false when the default behavior should not execute.
-  BoolCallback onIgnore;
+  BoolCallback? onIgnore;
 
   /// Called when the later button is tapped or otherwise activated.
   /// Return false when the default behavior should not execute.
-  BoolCallback onLater;
+  BoolCallback? onLater;
 
   /// Called when the update button is tapped or otherwise activated.
   /// Return false when the default behavior should not execute.
-  BoolCallback onUpdate;
+  BoolCallback? onUpdate;
 
   /// Hide or show Ignore button on dialog (default: true)
   bool showIgnore = true;
@@ -86,30 +86,35 @@ class Upgrader {
   /// Hide or show Later button on dialog (default: true)
   bool showLater = true;
 
+  /// Hide or show release notes (default: true)
+  bool showReleaseNotes = true;
+
   /// Can alert dialog be dismissed on tap outside of the alert dialog. Not used by alert card. (default: false)
   bool canDismissDialog = false;
 
   /// The country code that will override the system locale. Optional. Used only for iOS.
-  String countryCode;
+  String? countryCode;
 
   /// The minimum app version supported by this app. Earlier versions of this app
   /// will be forced to update to the current version. Optional.
-  String minAppVersion;
+  String? minAppVersion;
 
   /// The upgrade dialog style. Optional. Used only on UpgradeAlert. (default: material)
-  UpgradeDialogStyle dialogStyle = UpgradeDialogStyle.material;
+  UpgradeDialogStyle? dialogStyle = UpgradeDialogStyle.material;
 
   bool _displayed = false;
   bool _initCalled = false;
-  PackageInfo _packageInfo;
+  PackageInfo? _packageInfo;
 
-  String _installedVersion;
-  String _appStoreVersion;
-  String _appStoreListingURL;
-  String _updateAvailable;
-  DateTime _lastTimeAlerted;
-  String _lastVersionAlerted;
-  String _userIgnoredVersion;
+  String? _iosBundleID;
+  String? _installedVersion;
+  String? _appStoreVersion;
+  String? _appStoreListingURL;
+  String? _releaseNotes;
+  String? _updateAvailable;
+  DateTime? _lastTimeAlerted;
+  String? _lastVersionAlerted;
+  String? _userIgnoredVersion;
   bool _hasAlerted = false;
   bool _isCriticalUpdate = false;
 
@@ -119,7 +124,7 @@ class Upgrader {
 
   Upgrader._internal();
 
-  void installPackageInfo({PackageInfo packageInfo}) {
+  void installPackageInfo({PackageInfo? packageInfo}) {
     _packageInfo = packageInfo;
     _initCalled = false;
   }
@@ -132,92 +137,68 @@ class Upgrader {
     _appStoreListingURL = url;
   }
 
-  Future<bool> initialize() async {
+  Future<bool> initialize({@required iosBundleID, String? minVersion}) async {
     if (_initCalled) {
       return true;
     }
-
     _initCalled = true;
+    _iosBundleID = iosBundleID;
+    minAppVersion ??= minVersion;
 
     messages ??= UpgraderMessages();
-    if (messages.languageCode == null || messages.languageCode.isEmpty) {
+    if (messages!.languageCode.isEmpty) {
       print('upgrader: error -> languageCode is empty');
     } else if (debugLogging) {
-      print('upgrader: languageCode: ${messages.languageCode}');
+      print('upgrader: languageCode: ${messages!.languageCode}');
     }
 
     await _getSavedPrefs();
+
+    if (debugLogging) {
+      print('upgrader: operatingSystem: '
+          '${Platform.operatingSystem} ${Platform.operatingSystemVersion}');
+    }
 
     if (_packageInfo == null) {
       _packageInfo = await PackageInfo.fromPlatform();
       if (debugLogging) {
         print(
-            'upgrader: package info packageName: ${_packageInfo.packageName}');
-        print('upgrader: package info appName: ${_packageInfo.appName}');
-        print('upgrader: package info version: ${_packageInfo.version}');
+            'upgrader: package info packageName: ${_packageInfo!.packageName}');
+        print('upgrader: package info appName: ${_packageInfo!.appName}');
+        print('upgrader: package info version: ${_packageInfo!.version}');
       }
     }
 
     await _updateVersionInfo();
 
-    _installedVersion = _packageInfo.version;
+    _installedVersion = _packageInfo!.version;
 
     return true;
   }
 
   Future<bool> _updateVersionInfo() async {
-    // If there is an appcast for this platform
-    if (_isAppcastThisPlatform()) {
-      if (debugLogging) {
-        print('upgrader: appcast is available for this platform');
-      }
+    if (_packageInfo == null || || _packageInfo!.packageName.isEmpty) {
+      return false;
+    }
 
-      final appcast = this.appcast ?? Appcast(client: client);
-      await appcast.parseAppcastItemsFromUri(appcastConfig.url);
-      if (debugLogging) {
-        var count = appcast.items == null ? 0 : appcast.items.length;
-        print('upgrader: appcast item count: $count');
-      }
-      final bestItem = appcast.bestItem();
-      if (bestItem != null &&
-          bestItem.versionString != null &&
-          bestItem.versionString.isNotEmpty) {
-        if (debugLogging) {
-          print(
-              'upgrader: appcast best item version: ${bestItem.versionString}');
-        }
-        _appStoreVersion ??= bestItem.versionString;
-        _appStoreListingURL ??= bestItem.fileURL;
-        if (bestItem.isCriticalUpdate) {
-          _isCriticalUpdate = true;
-        }
-      }
-    } else {
-      // If this platform is not iOS, skip the iTunes lookup
-      if (Platform.isAndroid) {
-        return false;
-      }
-
-      if (_packageInfo == null ||
-          _packageInfo.packageName == null ||
-          _packageInfo.packageName.isEmpty) {
-        return false;
-      }
-
-      // The  country code of the locale, defaulting to `US`.
-      final code = countryCode ?? findCountryCode();
-      if (debugLogging) {
-        print('upgrader: countryCode: $code');
-      }
+    // The  country code of the locale, defaulting to `US`.
+    final code = countryCode ?? findCountryCode();
+    if (debugLogging) {
+      print('upgrader: countryCode: $code');
+    }
 
       final iTunes = ITunesSearchAPI();
       iTunes.client = client;
       final country = code;
-      final response = await iTunes.lookupByBundleId(_packageInfo.packageName,
-          country: country);
+      final response = await (iTunes.lookupByBundleId(_iosBundleID,
+          country: country));
 
-      _appStoreVersion ??= ITunesResults.version(response);
-      _appStoreListingURL ??= ITunesResults.trackViewUrl(response);
+      if (response != null) {
+        _appStoreVersion ??= ITunesResults.version(response);
+        _appStoreListingURL ??= ITunesResults.trackViewUrl(response);
+        _releaseNotes ??= ITunesResults.releaseNotes(response);
+        _releaseNotes = 'Minor updates and improvements.';
+      }
     }
 
     return true;
@@ -225,8 +206,8 @@ class Upgrader {
 
   bool _isAppcastThisPlatform() {
     if (appcastConfig == null ||
-        appcastConfig.url == null ||
-        appcastConfig.url.isEmpty) {
+        appcastConfig!.url == null ||
+        appcastConfig!.url!.isEmpty) {
       return false;
     }
 
@@ -234,8 +215,9 @@ class Upgrader {
     // However, if the supported OS is not listed, it is not supported.
     // When there are no supported OSes listed, they are all supported.
     var supported = true;
-    if (appcastConfig.supportedOS != null) {
-      supported = appcastConfig.supportedOS.contains(Platform.operatingSystem);
+    if (appcastConfig!.supportedOS != null) {
+      supported =
+          appcastConfig!.supportedOS!.contains(Platform.operatingSystem);
     }
     return supported;
   }
@@ -249,24 +231,20 @@ class Upgrader {
 
   String appName() {
     _verifyInit();
-    return _packageInfo.appName;
+    return _packageInfo?.appName ?? '';
   }
 
-  String currentAppStoreListingURL() {
-    return _appStoreListingURL;
-  }
+  String? currentAppStoreListingURL() => _appStoreListingURL;
 
-  String currentAppStoreVersion() {
-    return _appStoreVersion;
-  }
+  String? currentAppStoreVersion() => _appStoreVersion;
 
-  String currentInstalledVersion() {
-    return _installedVersion;
-  }
+  String? currentInstalledVersion() => _installedVersion;
+
+  String? get releaseNotes => _releaseNotes;
 
   String message() {
-    var msg = messages.message(UpgraderMessage.body);
-    msg = msg.replaceAll('{{appName}}', appName() ?? '');
+    var msg = messages!.message(UpgraderMessage.body)!;
+    msg = msg.replaceAll('{{appName}}', appName());
     msg = msg.replaceAll(
         '{{currentAppStoreVersion}}', currentAppStoreVersion() ?? '');
     msg = msg.replaceAll(
@@ -274,19 +252,22 @@ class Upgrader {
     return msg;
   }
 
-  void checkVersion({@required BuildContext context}) {
+  void checkVersion({required BuildContext context}) {
     if (!_displayed) {
       final shouldDisplay = shouldDisplayUpgrade();
       if (debugLogging) {
         print('upgrader: shouldDisplayUpgrade: $shouldDisplay');
+        print(
+            'upgrader: shouldDisplayReleaseNotes: ${shouldDisplayReleaseNotes()}');
       }
       if (shouldDisplay) {
         _displayed = true;
         Future.delayed(Duration(milliseconds: 0), () {
           _showDialog(
               context: context,
-              title: messages.message(UpgraderMessage.title),
+              title: messages!.message(UpgraderMessage.title),
               message: message(),
+              releaseNotes: shouldDisplayReleaseNotes() ? _releaseNotes : null,
               canDismissDialog: canDismissDialog);
         });
       }
@@ -333,8 +314,8 @@ class Upgrader {
     var rv = false;
     if (minAppVersion != null) {
       try {
-        final minVersion = Version.parse(minAppVersion);
-        final installedVersion = Version.parse(_installedVersion);
+        final minVersion = Version.parse(minAppVersion!);
+        final installedVersion = Version.parse(_installedVersion!);
         rv = installedVersion < minVersion;
       } catch (e) {
         print(e);
@@ -348,13 +329,21 @@ class Upgrader {
       return false;
     }
 
-    final lastAlertedDuration = DateTime.now().difference(_lastTimeAlerted);
-    return lastAlertedDuration < durationUntilAlertAgain;
+    final lastAlertedDuration = DateTime.now().difference(_lastTimeAlerted!);
+    final rv = lastAlertedDuration < durationUntilAlertAgain;
+    if (rv && debugLogging) {
+      print('upgrader: isTooSoon: true');
+    }
+    return rv;
   }
 
   bool alreadyIgnoredThisVersion() {
-    return _userIgnoredVersion != null &&
-        _userIgnoredVersion == _appStoreVersion;
+    final rv =
+        _userIgnoredVersion != null && _userIgnoredVersion == _appStoreVersion;
+    if (rv && debugLogging) {
+      print('upgrader: alreadyIgnoredThisVersion: true');
+    }
+    return rv;
   }
 
   bool isUpdateAvailable() {
@@ -371,8 +360,8 @@ class Upgrader {
     }
 
     if (_updateAvailable == null) {
-      final appStoreVersion = Version.parse(_appStoreVersion);
-      final installedVersion = Version.parse(_installedVersion);
+      final appStoreVersion = Version.parse(_appStoreVersion!);
+      final installedVersion = Version.parse(_installedVersion!);
 
       final available = appStoreVersion > installedVersion;
       _updateAvailable = available ? _appStoreVersion : null;
@@ -383,16 +372,20 @@ class Upgrader {
     return _updateAvailable != null;
   }
 
+  bool shouldDisplayReleaseNotes() {
+    return showReleaseNotes && (_releaseNotes?.isNotEmpty ?? false);
+  }
+
   /// Determine the current country code, either from the context, or
   /// from the system-reported default locale of the device. The default
   /// is `US`.
-  String findCountryCode({BuildContext context}) {
-    Locale locale;
+  String? findCountryCode({BuildContext? context}) {
+    Locale? locale;
     if (context != null) {
-      locale = Localizations.localeOf(context, nullOk: true);
+      locale = Localizations.maybeLocaleOf(context);
     } else {
       // Get the system locale
-      locale = WidgetsBinding.instance.window.locale;
+      locale = WidgetsBinding.instance!.window.locale;
     }
     final code = locale == null || locale.countryCode == null
         ? 'US'
@@ -401,13 +394,15 @@ class Upgrader {
   }
 
   void _showDialog(
-      {@required BuildContext context,
-      @required String title,
-      @required String message,
-      bool canDismissDialog}) {
+      {required BuildContext context,
+      required String? title,
+      required String message,
+      required String? releaseNotes,
+      required bool canDismissDialog}) {
     if (debugLogging) {
       print('upgrader: showDialog title: $title');
       print('upgrader: showDialog message: $message');
+      print('upgrader: showDialog releaseNotes: $releaseNotes');
     }
 
     // Save the date/time as the last time alerted.
@@ -418,66 +413,106 @@ class Upgrader {
       context: context,
       builder: (BuildContext context) {
         return dialogStyle == UpgradeDialogStyle.material
-            ? _alertDialog(title, message, context)
-            : _cupertinoAlertDialog(title, message, context);
+            ? _alertDialog(title!, message, releaseNotes, context)
+            : _cupertinoAlertDialog(title!, message, releaseNotes, context);
       },
     );
   }
 
-  AlertDialog _alertDialog(String title, String message, BuildContext context) {
+  AlertDialog _alertDialog(String title, String message, String? releaseNotes,
+      BuildContext context) {
+    Widget? notes;
+    if (releaseNotes != null) {
+      notes = Padding(
+          padding: EdgeInsets.only(top: 15.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text('Release Notes:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                releaseNotes,
+                maxLines: 15,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ));
+    }
     return AlertDialog(
       title: Text(title),
       content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Text(message),
           Padding(
               padding: EdgeInsets.only(top: 15.0),
-              child: Text(messages.message(UpgraderMessage.prompt))),
+              child: Text(messages!.message(UpgraderMessage.prompt)!)),
+          if (notes != null) notes,
         ],
       ),
       actions: <Widget>[
         if (showIgnore)
-          FlatButton(
-              child: Text(messages.message(UpgraderMessage.buttonTitleIgnore)),
+          TextButton(
+              child:
+                  Text(messages!.message(UpgraderMessage.buttonTitleIgnore)!),
               onPressed: () => onUserIgnored(context, true)),
         if (showLater)
-          FlatButton(
-              child: Text(messages.message(UpgraderMessage.buttonTitleLater)),
+          TextButton(
+              child: Text(messages!.message(UpgraderMessage.buttonTitleLater)!),
               onPressed: () => onUserLater(context, true)),
-        FlatButton(
-            child: Text(messages.message(UpgraderMessage.buttonTitleUpdate)),
+        TextButton(
+            child: Text(messages!.message(UpgraderMessage.buttonTitleUpdate)!),
             onPressed: () => onUserUpdated(context, !blocked())),
       ],
     );
   }
 
-  CupertinoAlertDialog _cupertinoAlertDialog(
-      String title, String message, BuildContext context) {
+  CupertinoAlertDialog _cupertinoAlertDialog(String title, String message,
+      String? releaseNotes, BuildContext context) {
+    Widget? notes;
+    if (releaseNotes != null) {
+      notes = Padding(
+          padding: EdgeInsets.only(top: 15.0),
+          child: Column(
+            children: <Widget>[
+              Text('Release Notes:',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                releaseNotes,
+                maxLines: 14,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ));
+    }
     return CupertinoAlertDialog(
       title: Text(title),
       content: Column(
-        mainAxisSize: MainAxisSize.min,
+        // mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.start,
         children: <Widget>[
           Text(message),
           Padding(
               padding: EdgeInsets.only(top: 15.0),
-              child: Text(messages.message(UpgraderMessage.prompt))),
+              child: Text(messages!.message(UpgraderMessage.prompt)!)),
+          if (notes != null) notes,
         ],
       ),
       actions: <Widget>[
         if (showIgnore)
           CupertinoDialogAction(
-              child: Text(messages.message(UpgraderMessage.buttonTitleIgnore)),
+              child:
+                  Text(messages!.message(UpgraderMessage.buttonTitleIgnore)!),
               onPressed: () => onUserIgnored(context, true)),
         if (showLater)
           CupertinoDialogAction(
-              child: Text(messages.message(UpgraderMessage.buttonTitleLater)),
+              child: Text(messages!.message(UpgraderMessage.buttonTitleLater)!),
               onPressed: () => onUserLater(context, true)),
         CupertinoDialogAction(
             isDefaultAction: true,
-            child: Text(messages.message(UpgraderMessage.buttonTitleUpdate)),
+            child: Text(messages!.message(UpgraderMessage.buttonTitleUpdate)!),
             onPressed: () => onUserUpdated(context, !blocked())),
       ],
     );
@@ -491,7 +526,7 @@ class Upgrader {
     // If this callback has been provided, call it.
     var doProcess = true;
     if (onIgnore != null) {
-      doProcess = onIgnore();
+      doProcess = onIgnore!();
     }
 
     if (doProcess) {
@@ -511,7 +546,7 @@ class Upgrader {
     // If this callback has been provided, call it.
     var doProcess = true;
     if (onLater != null) {
-      doProcess = onLater();
+      doProcess = onLater!();
     }
 
     if (doProcess) {}
@@ -529,16 +564,10 @@ class Upgrader {
     // If this callback has been provided, call it.
     var doProcess = true;
     if (onUpdate != null) {
-      doProcess = onUpdate();
+      doProcess = onUpdate!();
     }
 
-    if (doProcess) {
-      _sendUserToAppStore();
-    }
-
-    if (shouldPop) {
-      _pop(context);
-    }
+    if (doProcess) {}
   }
 
   Future<bool> clearSavedSettings() async {
@@ -567,7 +596,7 @@ class Upgrader {
     var prefs = await SharedPreferences.getInstance();
 
     _userIgnoredVersion = _appStoreVersion;
-    await prefs.setString('userIgnoredVersion', _userIgnoredVersion);
+    await prefs.setString('userIgnoredVersion', _userIgnoredVersion!);
     return true;
   }
 
@@ -577,7 +606,7 @@ class Upgrader {
     await prefs.setString('lastTimeAlerted', _lastTimeAlerted.toString());
 
     _lastVersionAlerted = _appStoreVersion;
-    await prefs.setString('lastVersionAlerted', _lastVersionAlerted);
+    await prefs.setString('lastVersionAlerted', _lastVersionAlerted!);
 
     _hasAlerted = true;
     return true;
@@ -598,7 +627,7 @@ class Upgrader {
   }
 
   void _sendUserToAppStore() async {
-    if (_appStoreListingURL == null || _appStoreListingURL.isEmpty) {
+    if (_appStoreListingURL == null || _appStoreListingURL!.isEmpty) {
       if (debugLogging) {
         print('upgrader: empty _appStoreListingURL');
       }
@@ -609,9 +638,9 @@ class Upgrader {
       print('upgrader: launching: $_appStoreListingURL');
     }
 
-    if (await canLaunch(_appStoreListingURL)) {
+    if (await canLaunch(_appStoreListingURL!)) {
       try {
-        await launch(_appStoreListingURL);
+        await launch(_appStoreListingURL!);
       } catch (e) {
         if (debugLogging) {
           print('upgrader: launch to app store failed: $e');
