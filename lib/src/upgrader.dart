@@ -103,6 +103,7 @@ class Upgrader {
   bool _initCalled = false;
   PackageInfo _packageInfo;
 
+  String _iosBundleId;
   String _installedVersion;
   String _appStoreVersion;
   String _appStoreListingURL;
@@ -132,12 +133,13 @@ class Upgrader {
     _appStoreListingURL = url;
   }
 
-  Future<bool> initialize() async {
+  Future<bool> initialize(String iosBundleId) async {
     if (_initCalled) {
       return true;
     }
 
     _initCalled = true;
+    _iosBundleId = iosBundleId;
 
     messages ??= UpgraderMessages();
     if (messages.languageCode == null || messages.languageCode.isEmpty) {
@@ -167,7 +169,7 @@ class Upgrader {
 
   Future<bool> _updateVersionInfo() async {
     // If there is an appcast for this platform
-    if (_isAppcastThisPlatform()) {
+    /*  if (_isAppcastThisPlatform()) {
       if (debugLogging) {
         print('upgrader: appcast is available for this platform');
       }
@@ -205,20 +207,19 @@ class Upgrader {
       }
 
       // The  country code of the locale, defaulting to `US`.
-      final code = countryCode ?? findCountryCode();
+      
       if (debugLogging) {
         print('upgrader: countryCode: $code');
-      }
+      } */
+    final code = countryCode ?? findCountryCode();
+    final iTunes = ITunesSearchAPI();
+    iTunes.client = client;
+    final country = code;
+    final response =
+        await iTunes.lookupByBundleId(_iosBundleId, country: country);
 
-      final iTunes = ITunesSearchAPI();
-      iTunes.client = client;
-      final country = code;
-      final response = await iTunes.lookupByBundleId(_packageInfo.packageName,
-          country: country);
-
-      _appStoreVersion ??= ITunesResults.version(response);
-      _appStoreListingURL ??= ITunesResults.trackViewUrl(response);
-    }
+    _appStoreVersion ??= ITunesResults.version(response);
+    _appStoreListingURL ??= ITunesResults.trackViewUrl(response);
 
     return true;
   }
