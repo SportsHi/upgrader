@@ -31,6 +31,7 @@ class UpgradeAlert extends UpgradeBase {
     String countryCode,
     String minAppVersion,
     UpgradeDialogStyle dialogStyle,
+    String iosBundleId,
   }) : super(
           key: key,
           appcastConfig: appcastConfig,
@@ -58,7 +59,7 @@ class UpgradeAlert extends UpgradeBase {
     }
 
     return FutureBuilder(
-        future: Upgrader().initialize(),
+        future: Upgrader().initialize('iosBundleId'),
         builder: (BuildContext context, AsyncSnapshot<bool> processed) {
           if (processed.connectionState == ConnectionState.done) {
             Upgrader().checkVersion(context: context);

@@ -15,25 +15,26 @@ class UpgradeCard extends UpgradeBase {
   /// `EdgeInsets.all(4.0)`.
   final EdgeInsetsGeometry margin;
 
-  UpgradeCard({
-    this.margin = const EdgeInsets.all(4.0),
-    Key key,
-    AppcastConfiguration appcastConfig,
-    UpgraderMessages messages,
-    bool debugAlwaysUpgrade,
-    bool debugDisplayOnce,
-    bool debugLogging,
-    Duration durationToAlertAgain,
-    BoolCallback onIgnore,
-    BoolCallback onLater,
-    BoolCallback onUpdate,
-    http.Client client,
-    bool showIgnore,
-    bool showLater,
-    bool canDismissDialog,
-    String countryCode,
-    String minAppVersion,
-  }) : super(
+  UpgradeCard(
+      {this.margin = const EdgeInsets.all(4.0),
+      Key key,
+      AppcastConfiguration appcastConfig,
+      UpgraderMessages messages,
+      bool debugAlwaysUpgrade,
+      bool debugDisplayOnce,
+      bool debugLogging,
+      Duration durationToAlertAgain,
+      BoolCallback onIgnore,
+      BoolCallback onLater,
+      BoolCallback onUpdate,
+      http.Client client,
+      bool showIgnore,
+      bool showLater,
+      bool canDismissDialog,
+      String countryCode,
+      String minAppVersion,
+      String iosBundleId})
+      : super(
           key: key,
           appcastConfig: appcastConfig,
           messages: messages,
@@ -59,7 +60,7 @@ class UpgradeCard extends UpgradeBase {
     }
 
     return FutureBuilder(
-        future: Upgrader().initialize(),
+        future: Upgrader().initialize('iosBundleId'),
         builder: (BuildContext context, AsyncSnapshot<bool> processed) {
           if (processed.connectionState == ConnectionState.done) {
             assert(Upgrader().messages != null);
