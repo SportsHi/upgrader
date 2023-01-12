@@ -137,6 +137,7 @@ class Upgrader {
   bool _initCalled = false;
   PackageInfo? _packageInfo;
 
+  String _iosBundleId;
   String? _installedVersion;
   String? _appStoreVersion;
   String? _appStoreListingURL;
@@ -196,12 +197,13 @@ class Upgrader {
     _appStoreListingURL = url;
   }
 
-  Future<bool> initialize() async {
+  Future<bool> initialize(String iosBundleId) async {
     if (_initCalled) {
       return true;
     }
 
     _initCalled = true;
+    _iosBundleId = iosBundleId;
 
     if (messages.languageCode.isEmpty) {
       print('upgrader: error -> languageCode is empty');
@@ -245,7 +247,7 @@ class Upgrader {
 
   Future<bool> _updateVersionInfo() async {
     // If there is an appcast for this platform
-    if (_isAppcastThisPlatform()) {
+    /*if (_isAppcastThisPlatform()) {
       if (debugLogging) {
         print('upgrader: appcast is available for this platform');
       }
@@ -281,6 +283,7 @@ class Upgrader {
       if (debugLogging) {
         print('upgrader: countryCode: $country');
       }
+      */
 
       // The  language code of the locale, defaulting to `en`.
       final language = languageCode ?? findLanguageCode();
@@ -288,30 +291,15 @@ class Upgrader {
         print('upgrader: languageCode: $language');
       }
 
-      // Get Android version from Google Play Store, or
-      // get iOS version from iTunes Store.
-      if (platform == TargetPlatform.android) {
-        await _getAndroidStoreVersion(country: country, language: language);
-      } else if (platform == TargetPlatform.iOS) {
-        final iTunes = ITunesSearchAPI();
-        iTunes.client = client;
-        final response = await (iTunes
-            .lookupByBundleId(_packageInfo!.packageName, country: country));
+    final code = countryCode ?? findCountryCode();
+    final iTunes = ITunesSearchAPI();
+    iTunes.client = client;
+    final country = code;
+    final response =
+        await iTunes.lookupByBundleId(_iosBundleId, country: country);
 
-        if (response != null) {
-          _appStoreVersion ??= ITunesResults.version(response);
-          _appStoreListingURL ??= ITunesResults.trackViewUrl(response);
-          _releaseNotes ??= ITunesResults.releaseNotes(response);
-          final mav = ITunesResults.minAppVersion(response);
-          if (mav != null) {
-            minAppVersion = mav.toString();
-            if (debugLogging) {
-              print('upgrader: ITunesResults.minAppVersion: $minAppVersion');
-            }
-          }
-        }
-      }
-    }
+    _appStoreVersion ??= ITunesResults.version(response);
+    _appStoreListingURL ??= ITunesResults.trackViewUrl(response);
 
     return true;
   }
