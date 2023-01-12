@@ -10,7 +10,7 @@ class UpgradeBase extends StatefulWidget {
   final Upgrader upgrader;
   final String iosBundleId;
 
-  const UpgradeBase(this.upgrader, {Key? key}) : super(key: key);
+  const UpgradeBase(this.upgrader, this.iosBundleId, {Key? key}) : super(key: key);
 
   Widget build(BuildContext context, UpgradeBaseState state) {
     return Container();
