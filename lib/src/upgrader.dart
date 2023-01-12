@@ -297,9 +297,10 @@ class Upgrader {
     final country = code;
     final response =
         await iTunes.lookupByBundleId(_iosBundleId, country: country);
-
-    _appStoreVersion ??= ITunesResults.version(response);
-    _appStoreListingURL ??= ITunesResults.trackViewUrl(response);
+    if (response != null){
+        _appStoreVersion ??= ITunesResults.version(response!);
+        _appStoreListingURL ??= ITunesResults.trackViewUrl(response!);
+    }
 
     return true;
   }
