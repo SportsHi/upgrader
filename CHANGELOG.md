@@ -1,3 +1,322 @@
+## 5.1.0
+
+- Updated the initialization of upgrader to use a future that will allow the initialize method to be called multiple times. This
+does not require any changes by app code.
+- Fixed issue #239 where some Android release notes that contained <br> HTML tags were not converted into \n characters.
+- Added Portuguese release notes translation. (thanks to @RodolfoSilva)
+- Added new example using upgrader inside a stateless widget.
+- Added additional try/catch logic to report App Store API errors.
+- Fixed unit tests that were broken due to the initialization changes.
+
+## [5.1.0-alpha.1]
+
+- Updated the initialization of upgrader to use a future that will allow the initialize method to be called multiple times. This
+does not require any changes by app code.
+- Added new example using upgrader inside a stateless widget.
+- Added additional try/catch logic to report App Store API errors.
+- Fixed unit tests that were broken due to the initialization changes.
+
+## 5.0.0
+
+- Updated to Flutter 3.0.1 and Dart 2.17.1.
+- Updated all package dependencies to their latest version.
+- Fixed a few warnings.
+
+## 5.0.0-alpha.1
+
+- Updated to Flutter 3.0.1 and Dart 2.17.1.
+- Updated all package dependencies to their latest version.
+- Fixed a few warnings.
+
+## 4.11.1
+
+- Fixed issue #236 where the 'he' body message was missing a `}` character.
+
+## 4.11.0
+
+- Updated package dependencies:
+    - mockito to ">=5.0.0 <5.4.0"
+- Added new language translations for Danish ('da'). (thanks to @Ruukas97)
+- Updated README to include a screenshot of a minAppVersion example.
+
+## 4.10.0
+
+- Updated minimum Flutter version to 2.5.0 and Dart to 2.14.0.
+- Updated package dependencies:
+    - device_info_plus to ">=3.2.0 <7.0.0"
+    - html to ">=0.15.0 <=0.15.1"
+    - http to ">=0.13.0 <=0.13.5"
+    - package_info_plus to ">=1.3.0 <3.0.0"
+    - shared_preferences to ">=2.0.3 <2.1.0"
+    - url_launcher to ">=6.1.0 <= 6.1.5"
+
+## 4.9.0
+
+- Expanded dependency version ranges without breaking compatibility. More dependency
+updates coming in the next update.
+- Updated package dependencies:
+    - device_info_plus to ">=3.2.0 <6.0.0"
+    - http to ">=0.13.0 <=0.13.3"
+    - os_detect to ">=2.0.0 <2.1.0"
+    - package_info_plus to ">=1.3.0 <=1.4.2"
+    - shared_preferences to ">=2.0.3 <=2.0.7"
+- Updated example to use Dart >=2.12.0.
+
+## 4.8.1
+
+- Fixed Android locale language code in lookupURLById. Thanks to [@humanolaranja](https://github.com/humanolaranja) for this update.
+
+## 4.8.0
+
+- Release notes for the Android Play Store now display in device locale language code. Updated the Play Store API request to include the language code. Thanks to [@humanolaranja](https://github.com/humanolaranja) for this update.
+
+## 4.7.0
+
+- Changed the Android Play Store description minimum app version tag from `[:mav: 1.2.3]`, which is not allowed by Google,
+to `[Minimum supported app version: 1.2.3]`, which should be allowed. Thanks to @joymyr for the suggestion.
+- Improved the Android Play Store command line app by adding country as an optional parameter.
+- Updated README with platforms supported.
+
+## 4.7.0-alpha.1
+
+- Changed the Android Play Store description minimum app version tag from `[:mav: 1.2.3]`, which is not allowed by Google,
+to `[Minimum supported app version: 1.2.3]`, which should be allowed. Thanks to @joymyr for the suggestion.
+
+## 4.6.1
+
+- Added new language translations for Chinese ('zh'). (thanks to @nivlaoh)
+- Added new language translations for Hebrew ('he'). (thanks to @TomerPacific)
+- Added new language translations for Hindi ('hi'). (thanks to @chirag-chopra)
+- Added new language translations for Telugu ('te'). (thanks to @moulibheemaneti)
+- Added Indonesian releaseNotes translation. (thanks to @malvinpratama)
+- Added Italian releaseNotes translation. (thanks to @JustLazzah)
+- Added Japanese releaseNotes translation. (thanks to @akirakakar)
+
+## 4.6.0
+
+- Updated the Android Play Store API request to include the country code, and added cache buster to break the HTTP caching.
+- Updated the device_info_plus dependency to include version 4.1.0 and up to <4.2.0.
+
+## 4.5.0
+
+- Added German releaseNotes translation. (thanks to @LenhartStephan)
+- Fixed punctuation for French language. (thanks to @benoitkugler)
+- Added French releaseNotes translation. (thanks to @benoitkugler)
+- Added Arabic releaseNotes translation. (thanks to @AhmadAbuRjeila)
+- Fixed minor issue with the Arabic translation of the word "later". (thanks to @alhamri)
+
+## 4.4.2
+
+- Corrected CHANGELOG issue with version 4.4.1.
+
+## 4.4.1
+
+- Fixed launch url malfunction issue with iOS. (thanks to @samcho0608)
+
+## 4.4.0
+
+- Updated the version package to support version ranges from >=2.0.0 <3.1.0.
+- Improved exception handling around version parsing.
+- Fixed methods ITunesResults.minAppVersion and PlayStoreResults.minAppVersion to
+handle tagName parameter properly.
+
+## 4.3.0
+
+- Updated the device_info_plus package to support version ranges from >=3.2.0 to <4.1.0.
+- Improved the use of shared preferences in unit test.
+
+## 4.2.2
+
+- Fixed an issue on Android when the Webview was opening instead of the Play Store.
+
+## 4.2.2-alpha.1
+
+- Fixed an issue on Android when the Webview was opening instead of the Play Store.
+- This is a pre-release to allow for testing with a large amount of developers.
+
+## 4.2.1
+
+- After the latest update to the Play Store, the Android app version was not being
+found on the Play Store. This has been resolved.
+- Changed the "upgrader: instantiated." message to be behind debugLogging.
+
+## 4.2.1-alpha.2
+
+- Removed noisy exception messages that were logged during Play Store access.
+
+## 4.2.1-alpha.1
+
+- After the latest update to the Play Store, the Android app version was not being
+found on the Play Store. This has been resolved.
+- This is a pre-release to allow for testing with a large amount of developers.
+
+## 4.2.0
+
+- Updated Play Store release notes containing `<br>` to use newline ('\n') instead.
+
+## 4.1.2
+
+* Fixed Flutter 3 warnings related to `WidgetsBinding.instance`.
+* Fixed a typo in the Persian body message.
+* Updated xml dependency to ">=5.0.2 <7.0.0".
+
+## 4.1.1
+
+* Fixed error from pub.dev because it used Flutter 2.10.5: "The property 'window' can't be unconditionally accessed because the receiver can be 'null'."
+
+## 4.1.0
+
+* Minor updates after upgrading Flutter to 3.0.0 and Dart to 2.17.0.
+
+## 4.0.0
+
+* [BREAKING] No more singleton. This is a huge update to remove the use of a singleton for Upgrader.
+It is now a normal class that is passed to either UpgradeAlert or UpgradeCard.
+This makes it easy to subclass Upgrader and change its behavior. The parameters
+to UpgradeAlert and UpgradeCard have been removed, and can be set on Upgrader.
+See the various examples for more information.
+
+* Changed the callback signature for the willDisplayUpgrade callback to add
+minAppVersion, installedVersion, and appStoreVersion parameters.
+
+* Updated url_launcher to version 6.1.0.
+
+* There are no new features, no feature updates, and no bug fixes in this release.
+
+## 4.0.0-alpha.4
+
+[BREAKING]
+Changed the callback signature for the willDisplayUpgrade callback to add
+minAppVersion, installedVersion, and appStoreVersion parameters.
+
+## 4.0.0-alpha.3
+
+Moved the upgrader parameter for UpgradeCard to a named parameter.
+
+There are no new features, no feature updates, and no bug fixes in this release.
+
+## 4.0.0-alpha.2
+
+The Upgrader class is now used as a shared instance with UpgradeAlert and UpgradeCard.
+
+There are no new features, no feature updates, and no bug fixes in this release.
+
+## 4.0.0-alpha.1
+
+[BREAKING]
+No more singleton. This is a huge update to remove the use of a singleton for Upgrader.
+It is now a normal class that is passed to either UpgradeAlert or UpgradeCard.
+This makes it easy to subclass Upgrader and change its behavior. The parameters
+to UpgradeAlert and UpgradeCard have been removed, and can be set on Upgrader.
+See the various examples for more information.
+
+Updated url_launcher to version 6.1.0.
+
+There are no new features, no feature updates, and no bug fixes in this release.
+
+## 3.15.0
+
+* Added new language translations for Mongolian ('mn').
+* Added new message phrase for 'Release Notes'. All language translations need
+to be updated to include a translation. The English and Spanish translations are
+included.
+* Updated url_launcher to version 6.1.0, and fixed two deprecations from that upgrade.
+
+## 3.14.0
+
+* BREAKING (Minor): Changed the parameter name `debugAlwaysUpgrade` to `debugDisplayAlways`
+in `UpgradeAlert` and `UpgradeCard` to be consistent with the rest of the code
+and with the README.
+* Added new language translation for Dutch ('nl').
+* Added new language translation for Khmer ('km').
+* Added new language translation for Haitian Creole ('ht').
+* Added new language translation for Japanese ('ja').
+* Added new callback: `willDisplayUpgrade`: called when `upgrader` determines that
+an upgrade may or may not be displayed, defaults to ```null```. The `value`
+parameter will be true when it should be displayed, and false when it should not
+be displayed. One good use for this callback is logging metrics for your app.
+
+## 3.13.0
+
+* Added new language translation for Swedish ('sv').
+
+## 3.12.1
+
+* Removed the use of dart:io from the package to allow for compatibility on web.
+Added use of pacakge os_detect instead. Testing still uses dart:io.
+
+## 3.12.0
+
+* Updated to device_info_plus.
+* Changed from using pedantic to flutter_lints. Now using the rules from
+flutter_lints/flutter.yaml.
+* Now using const instead of final on many variables.
+* Resolved linting issues. Used typed over untyped uninitialized variables.
+
+## 3.11.1
+
+* Fixed exception while running in the browser. Added example support for web.
+
+## 3.11.0
+
+* Added new language translations for Greek ('el').
+
+## 3.10.0
+
+* Added new language translations for Lithuanian ('lt').
+
+## 3.9.0
+
+* Added support for minimum app version in the app store description field. See
+README for more details.
+
+## 3.8.0
+
+* Added new language translations for Norwegian ('nb').
+
+## 3.7.0
+
+* Migrated from the deprecated package_info plugin to package_info_plus.
+
+## 3.6.0
+
+* Fixed exception for Android release notes when there was no WHAT'S NEW section
+on Google Play. Now, the main app description will be used for release notes.
+
+## 3.5.1
+
+* Fixed issue with large text on a small device. Now, the content will scroll.
+
+## 3.5.0
+
+* Added support for Android using the Google Play Store. Now, by default on
+Android, the version of the app on the Google Play Store will be used, and there
+is no need to setup the Appcast. You can continue using the Appcast on Android,
+but it is no longer needed when the app is in the Google Play Store.
+* Added a cache buster to the iTunes API URL to break the HTTP caching.
+
+## 3.4.1
+
+* Fixed issue with Appcast where the upgrade message was not displayed.
+
+## 3.4.0
+
+* Added new language translations for Tamil ('ta'), Kazakh ('kk'), Bengali ('bn'), Ukrainian ('uk').
+
+## 3.3.1
+
+* Fixed the parsing of the Appcast body to handle UTF-8 correctly.
+
+## 3.3.0
+
+* When using the ```UpgradeAlert``` widget, the Android back button will not
+dismiss the alert dialog by default anymore. To allow the back button to dismiss
+the dialog, use ```shouldPopScope``` and return true.
+
+## 3.2.1
+
+* Resolved issue where release notes for the iOS App Store always displayed Minor updates and improvements.
+
 ## 3.2.0
 
 * Resolved issue where the country code used by the iTunes Search API should have been upper case.
