@@ -8,6 +8,7 @@ import 'package:upgrader/upgrader.dart';
 class UpgradeBase extends StatefulWidget {
   /// The upgraders used to configure the upgrade dialog.
   final Upgrader upgrader;
+  final String iosBundleId,
 
   const UpgradeBase(this.upgrader, {Key? key}) : super(key: key);
 
@@ -20,7 +21,7 @@ class UpgradeBase extends StatefulWidget {
 }
 
 class UpgradeBaseState extends State<UpgradeBase> {
-  Future<bool> get initialized => widget.upgrader.initialize();
+  Future<bool> get initialized => widget.upgrader.initialize(iosBundleId);
 
   @override
   Widget build(BuildContext context) => widget.build(context, this);
