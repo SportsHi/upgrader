@@ -298,8 +298,15 @@ class Upgrader {
     final response =
         await iTunes.lookupByBundleId(_iosBundleId!, country: country);
     if (response != null){
+        if (debugLogging) {
+        print('upgrader: itunes response');
+        print('upgrader: itunes response before version');
         _appStoreVersion ??= ITunesResults.version(response!);
+        print('upgrader: itunes response version url');
         _appStoreListingURL ??= ITunesResults.trackViewUrl(response!);
+        print('upgrader: _appStoreVersion: $_appStoreVersion');
+        print('upgrader: _appStoreListingURL: $_appStoreListingURL');
+        }
     }
 
     return true;
