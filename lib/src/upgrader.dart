@@ -137,7 +137,7 @@ class Upgrader {
   bool _initCalled = false;
   PackageInfo? _packageInfo;
 
-  String _iosBundleId;
+  String? _iosBundleId;
   String? _installedVersion;
   String? _appStoreVersion;
   String? _appStoreListingURL;
