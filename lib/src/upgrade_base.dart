@@ -21,7 +21,7 @@ class UpgradeBase extends StatefulWidget {
 }
 
 class UpgradeBaseState extends State<UpgradeBase> {
-  Future<bool> get initialized => widget.upgrader.initialize('iosBundleId');
+  Future<bool> get initialized => widget.upgrader.initialize('com.sportswise.sportswise');
 
   @override
   Widget build(BuildContext context) => widget.build(context, this);
